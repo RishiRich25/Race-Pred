@@ -70,17 +70,13 @@ class Preprocessor:
             self.save_encoders(path)
 
         return df
+    
 
-    # ===============================
-    # Save Encoders
-    # ===============================
     def save_encoders(self, path="encoders.pkl"):
         with open(path, "wb") as f:
             pickle.dump(self.encoders, f)
 
-    # ===============================
-    # Load Encoders
-    # ===============================
+
     def load_encoders(self, path="encoders.pkl"):
         with open(path, "rb") as f:
             self.encoders = pickle.load(f)
