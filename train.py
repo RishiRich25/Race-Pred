@@ -2,17 +2,16 @@ from preprocessing import Preprocessor
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 import xgboost as xgb
 
 prep = Preprocessor()
 
-
 df = prep.load_data("history_race.csv")
 df = prep.clean_data(df)
 df = prep.feature_engineering(df)
-df = prep.fit_encoders(df)
+
+df = prep.encode(df, mode="fit", save=True)
 
 
 prep.save_encoders()
