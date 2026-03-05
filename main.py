@@ -5,6 +5,7 @@ import xgboost as xgb
 import fastf1
 from datetime import datetime
 
+from current_year import run_elo_update
 from preprocessing import Preprocessor
 
 fastf1.Cache.enable_cache("fastf1_cache")
@@ -73,6 +74,7 @@ race_df = pd.DataFrame({
 # ===============================
 # 🔥 LOAD ELO HERE (Dynamic)
 # ===============================
+run_elo_update()
 driver_elo = pd.read_csv("this_year_driver.csv")
 team_elo = pd.read_csv("this_year_team.csv")
 
