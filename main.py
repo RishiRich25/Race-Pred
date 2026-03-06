@@ -79,8 +79,8 @@ race_df = pd.DataFrame({
 # 🔥 LOAD ELO HERE (Dynamic)
 # ===============================
 
-driver_elo = pd.read_csv("this_year_driver.csv")
-team_elo = pd.read_csv("this_year_team.csv")
+driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
+team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
 
 race_df = race_df.merge(
     driver_elo[["Driver", "Elo"]],
