@@ -78,7 +78,7 @@ race_df = pd.DataFrame({
 # ===============================
 # 🔥 LOAD ELO HERE (Dynamic)
 # ===============================
-run_elo_update()
+
 driver_elo = pd.read_csv("this_year_driver.csv")
 team_elo = pd.read_csv("this_year_team.csv")
 
