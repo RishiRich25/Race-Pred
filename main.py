@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import os
 import xgboost as xgb
 import fastf1
 from datetime import datetime
@@ -8,7 +8,11 @@ from datetime import datetime
 from current_year import run_elo_update
 from preprocessing import Preprocessor
 
-fastf1.Cache.enable_cache("fastf1_cache")
+cache_dir = "cache"
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)    
+
+fastf1.Cache.enable_cache("cache")
 
 st.set_page_config(page_title="Live F1 Race Predictor", layout="wide")
 st.title("🏎️ Automatic Live F1 Race Predictor")
