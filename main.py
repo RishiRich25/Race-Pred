@@ -63,7 +63,10 @@ except Exception:
     st.warning("Qualifying not available yet.")
     st.stop()
 
-st.success("Qualifying session detected ✅")
+if len(quali) == 0:
+    (f"### Quali Data Not Available")
+else:
+    st.success("Qualifying session detected ✅")
 
 # ===============================
 # Build Feature Table
@@ -71,9 +74,9 @@ st.success("Qualifying session detected ✅")
 race_df = pd.DataFrame({
     "Driver": quali["FullName"],
     "Team": quali["TeamName"],
-    "Q1": quali["Q1"].dt.total_seconds().fillna(0),
-    "Q2": quali["Q2"].dt.total_seconds().fillna(0),
-    "Q3": quali["Q3"].dt.total_seconds().fillna(0),
+    "Q1": quali["Q1"].total_seconds().fillna(0),
+    "Q2": quali["Q2"].total_seconds().fillna(0),
+    "Q3": quali["Q3"].total_seconds().fillna(0),
     "Start": quali["GridPosition"],
     "Track": event_name,
     "Rain": 0
@@ -104,8 +107,8 @@ race_df = race_df.merge(
     how="left"
 ).rename(columns={"Elo": "T_Elo"})
 
-race_df["D_Elo"] = race_df["D_Elo"].fillna(race_df["D_Elo"].mean())
-race_df["T_Elo"] = race_df["T_Elo"].fillna(race_df["T_Elo"].mean())
+race_df["D_Elo"] = race_df["D_Elo"].fillna(1200)
+race_df["T_Elo"] = race_df["T_Elo"].fillna(1800)
 
 # ===============================
 # Encode
@@ -124,7 +127,7 @@ FEATURES = [
     "Q1", "Q2", "Q3", "Start",
     "D_Elo", "T_Elo"
 ]
-
+print(FEATURES)
 dtest = xgb.DMatrix(race_df[FEATURES])
 dtest.set_group([len(race_df)])
 
