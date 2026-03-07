@@ -77,7 +77,7 @@ race_df = pd.DataFrame({
     "Q1": quali["Q1"].dt.total_seconds().fillna(0),
     "Q2": quali["Q2"].dt.total_seconds().fillna(0),
     "Q3": quali["Q3"].dt.total_seconds().fillna(0),
-    "Start": quali["GridPosition"],
+    "Start": quali["Position"],
     "Track": event_name,
     "Rain": 0
 })
