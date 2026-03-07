@@ -120,7 +120,7 @@ FEAT = [
     "Driver", "Team", "Start",
     "D_Elo", "T_Elo"
 ]
-st.write(f"# Elo for Event: {event_name}")
+st.write(f"#### Elo for Event: {event_name}")
 st.dataframe(race_df[FEAT])
 
 race_df = prep.encode(
