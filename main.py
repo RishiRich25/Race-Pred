@@ -110,6 +110,9 @@ race_df["T_Elo"] = race_df["T_Elo"].fillna(race_df["T_Elo"].mean())
 # ===============================
 # Encode
 # ===============================
+race_df["Driver_Name"] = race_df["Driver"]
+race_df["Team_Name"] = race_df["Team"]
+
 race_df = prep.encode(
     race_df,
     mode="update",
@@ -139,9 +142,12 @@ st.write("## 🏁 Predicted Race Classification")
 st.dataframe(
     race_df[[
         "Predicted_Position",
-        "Driver",
-        "Team",
+        "Driver_Name",
+        "Team_Name",
         "Predicted_Score"
-    ]]
+    ]].rename(columns={
+        "Driver_Name": "Driver",
+        "Team_Name": "Team"
+    })
 )
 
