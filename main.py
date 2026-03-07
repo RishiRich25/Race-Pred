@@ -39,7 +39,11 @@ prep = load_preprocessor()
 # Detect Current Event
 # ===============================
 current_year = datetime.now().year
-schedule = fastf1.get_event_schedule(current_year)
+try:
+    schedule = fastf1.get_event_schedule(current_year, backend="ergast")
+except:
+    st.error("Could not load F1 schedule")
+    st.stop()
 now = pd.Timestamp.now()
 
 next_event = schedule[schedule["EventDate"] >= now].iloc[0]
