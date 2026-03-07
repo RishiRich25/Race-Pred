@@ -120,7 +120,7 @@ FEAT = [
     "Driver", "Team", "Start",
     "D_Elo", "T_Elo"
 ]
-print(race_df[FEAT])
+st.dataframe(race_df[FEAT])
 
 race_df = prep.encode(
     race_df,
@@ -153,10 +153,10 @@ st.dataframe(
         "Predicted_Position",
         "Driver_Name",
         "Team_Name",
-        "Predicted_Score"
+        "Start"
     ]].rename(columns={
         "Driver_Name": "Driver",
-        "Team_Name": "Team"
+        "Team_Name": "Team",
+        "Start":"Starting Position"
     })
 )
-
