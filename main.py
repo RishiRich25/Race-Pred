@@ -72,8 +72,8 @@ else:
 # Build Feature Table
 # ===============================
 race_df = pd.DataFrame({
-    "Driver": quali["FullName"],
-    "Team": quali["TeamName"],
+    "Driver": quali["DriverId"],
+    "Team": quali["TeamId"],
     "Q1": quali["Q1"].dt.total_seconds().fillna(0),
     "Q2": quali["Q2"].dt.total_seconds().fillna(0),
     "Q3": quali["Q3"].dt.total_seconds().fillna(0),
@@ -98,13 +98,6 @@ team_elo = team_elo.rename(columns={
 race_df["Driver_Name"] = race_df["Driver"]
 race_df["Team_Name"] = race_df["Team"]
 
-
-race_df["Driver"] = race_df["Driver"].str.strip().str.lower()
-race_df["Team"] = race_df["Team"].str.strip().str.lower()
-
-driver_elo["Driver"] = driver_elo["Driver"].str.strip().str.lower()
-team_elo["Team"] = team_elo["Team"].str.strip().str.lower()
-
 race_df = race_df.merge(
     driver_elo[["Driver", "Elo"]],
     on="Driver",
@@ -123,6 +116,11 @@ race_df["T_Elo"] = race_df["T_Elo"].fillna(1800)
 # ===============================
 # Encode
 # ===============================
+FEAT = [
+    "Driver", "Team", "Start",
+    "D_Elo", "T_Elo"
+]
+print(race_df[FEAT])
 
 race_df = prep.encode(
     race_df,
