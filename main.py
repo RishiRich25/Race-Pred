@@ -87,13 +87,13 @@ driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
 team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
 
 race_df = race_df.merge(
-    driver_elo[["Driver", "Elo"]],
+    driver_elo[["Name", "Elo"]],
     on="Driver",
     how="left"
 ).rename(columns={"Elo": "D_Elo"})
 
 race_df = race_df.merge(
-    team_elo[["Team", "Elo"]],
+    team_elo[["Name", "Elo"]],
     on="Team",
     how="left"
 ).rename(columns={"Elo": "T_Elo"})
