@@ -84,16 +84,22 @@ race_df = pd.DataFrame({
 # ===============================
 
 driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
+driver_elo = driver_elo.rename(columns={
+    "Name": "Driver"
+})
 team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
+driver_elo = driver_elo.rename(columns={
+    "Name": "Team"
+})
 
 race_df = race_df.merge(
-    driver_elo[["Name", "Elo"]],
+    driver_elo[["Driver", "Elo"]],
     on="Driver",
     how="left"
 ).rename(columns={"Elo": "D_Elo"})
 
 race_df = race_df.merge(
-    team_elo[["Name", "Elo"]],
+    team_elo[["Team", "Elo"]],
     on="Team",
     how="left"
 ).rename(columns={"Elo": "T_Elo"})
