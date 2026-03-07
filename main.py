@@ -88,7 +88,7 @@ driver_elo = driver_elo.rename(columns={
     "Name": "Driver"
 })
 team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
-driver_elo = driver_elo.rename(columns={
+team_elo = team_elo.rename(columns={
     "Name": "Team"
 })
 
