@@ -74,9 +74,9 @@ else:
 race_df = pd.DataFrame({
     "Driver": quali["FullName"],
     "Team": quali["TeamName"],
-    "Q1": quali["Q1"].total_seconds().fillna(0),
-    "Q2": quali["Q2"].total_seconds().fillna(0),
-    "Q3": quali["Q3"].total_seconds().fillna(0),
+    "Q1": quali["Q1"].dt.total_seconds().fillna(0),
+    "Q2": quali["Q2"].dt.total_seconds().fillna(0),
+    "Q3": quali["Q3"].dt.total_seconds().fillna(0),
     "Start": quali["GridPosition"],
     "Track": event_name,
     "Rain": 0
