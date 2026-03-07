@@ -145,7 +145,7 @@ race_df = race_df.sort_values(
     by="Predicted_Score",
     ascending=False
 ).reset_index(drop=True)
-race_df["Driver_Name"].dropna()
+race_df = race_df["Driver_Name"].dropna()
 race_df["Predicted_Position"] = race_df.index + 1
 
 st.write("## 🏁 Predicted Race Classification")
