@@ -95,6 +95,16 @@ team_elo = team_elo.rename(columns={
     "Name": "Team"
 })
 
+race_df["Driver_Name"] = race_df["Driver"]
+race_df["Team_Name"] = race_df["Team"]
+
+
+race_df["Driver"] = race_df["Driver"].str.strip().str.lower()
+race_df["Team"] = race_df["Team"].str.strip().str.lower()
+
+driver_elo["Driver"] = driver_elo["Driver"].str.strip().str.lower()
+team_elo["Team"] = team_elo["Team"].str.strip().str.lower()
+
 race_df = race_df.merge(
     driver_elo[["Driver", "Elo"]],
     on="Driver",
@@ -113,8 +123,6 @@ race_df["T_Elo"] = race_df["T_Elo"].fillna(1800)
 # ===============================
 # Encode
 # ===============================
-race_df["Driver_Name"] = race_df["Driver"]
-race_df["Team_Name"] = race_df["Team"]
 
 race_df = prep.encode(
     race_df,
@@ -127,7 +135,7 @@ FEATURES = [
     "Q1", "Q2", "Q3", "Start",
     "D_Elo", "T_Elo"
 ]
-print(FEATURES)
+
 dtest = xgb.DMatrix(race_df[FEATURES])
 dtest.set_group([len(race_df)])
 
