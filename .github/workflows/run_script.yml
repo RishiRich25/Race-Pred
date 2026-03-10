@@ -1,0 +1,71 @@
+name: Weekly CSV Update
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "30 6-23 * * 1"   # Runs every hour Monday starting 12:00 PM IST
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if CSV already updated today
+        id: check_update
+        run: |
+          LAST_COMMIT_DATE=$(git log -1 --format=%cd --date=short -- this_year_team.csv 2>/dev/null || echo "none")
+          TODAY=$(date +%Y-%m-%d)
+
+          echo "Last update: $LAST_COMMIT_DATE"
+          echo "Today: $TODAY"
+
+          if [ "$LAST_COMMIT_DATE" = "$TODAY" ]; then
+            echo "already_updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "already_updated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if already updated
+        if: steps.check_update.outputs.already_updated == 'true'
+        run: |
+          echo "CSV already updated today. Skipping."
+          exit 0
+
+      - name: Setup Python
+        if: steps.check_update.outputs.already_updated == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        if: steps.check_update.outputs.already_updated == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run script
+        if: steps.check_update.outputs.already_updated == 'false'
+        run: python current_year.py
+
+      - name: Commit changes
+        if: steps.check_update.outputs.already_updated == 'false'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add this_year_driver.csv this_year_team.csv
+
+          if git diff --staged --quiet; then
+            echo "No CSV changes. Will retry next hour."
+          else
+            git commit -m "Weekly CSV update"
+            git push origin HEAD
+          fi
