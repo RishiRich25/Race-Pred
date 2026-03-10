@@ -5,7 +5,6 @@ import xgboost as xgb
 import fastf1
 from datetime import datetime
 
-from current_year import run_elo_update
 from preprocessing import Preprocessor
 
 cache_dir = "cache"
