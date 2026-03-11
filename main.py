@@ -332,7 +332,7 @@ try:
     session.load()
     quali = session.results
 except Exception:
-    st.warning("Qualifying not available yet.")
+    st.warning("Qualifying not available yet. Come back after qualifying is over on a Saturday")
     st.stop()
 
 if len(quali) == 0:
