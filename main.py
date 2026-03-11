@@ -129,9 +129,9 @@ Typical cleaning steps:
 import pandas as pd
 
 df = pd.DataFrame({
-    "Driver": results["Abbreviation"],
-    "Team": results["TeamName"],
-    "QualiPos": results["Position"]
+    "Driver": results["DriverId"],
+    "Team": results["TeamId"],
+    "QualiPos": results["GridPosition"]
 })
 """, language="python")
 
@@ -152,9 +152,21 @@ learn patterns in race outcomes.
 """)
 
     st.code("""
-df["AvgFinish"] = historical_data.groupby("Driver")["Finish"].mean()
-
-df["GridAdvantage"] = df["QualiPos"] - df["AvgFinish"]
+def driver_elo_calc_past(elo, start_pos, finish_pos, status, k_fact, grid=19):
+    start_pos = int(start_pos)
+    expected = 1 / (1 + 10 ** ((start_pos - 10) / 10))
+    if finish_pos.isdigit():
+        finish_pos = int(finish_pos)
+    if status in ['Finished','Lapped']:
+        actual = max(0, 1 - (finish_pos - 1) / grid)
+    elif status in ["DNF"]:
+        actual = 0.0
+    else:
+        return elo
+    elo = float(elo)
+    actual = float(actual)
+    expected = float(expected)
+    return round(elo + k_fact * (actual - expected), 2)
 """, language="python")
 
 
@@ -206,11 +218,61 @@ The current implementation uses **XGBoost**.
     st.code("""
 from xgboost import XGBRegressor
 
-model = XGBRegressor(
-    n_estimators=500,
-    learning_rate=0.05,
-    max_depth=6
-)
+params = {
+    "objective": "rank:ndcg",
+    "eval_metric": "ndcg",
+    "learning_rate": 0.07,
+    "max_depth": 9,
+    "subsample": 0.85,
+    "colsample_bytree": 0.8,
+    "min_child_weight": 3,
+    "gamma": 0.1,
+    "reg_alpha": 0.2,
+    "reg_lambda": 1,
+    "tree_method": "hist",
+    "seed": 42
+}
+            gkf = GroupKFold(n_splits=5)
+cv_ndcg = []
+best_iters = []
+
+for fold, (tr_idx, val_idx) in enumerate(
+    gkf.split(X_train, y_train, train_groups), 1
+):
+    X_tr = X_train.iloc[tr_idx]
+    y_tr = y_train.iloc[tr_idx]
+    X_val = X_train.iloc[val_idx]
+    y_val = y_train.iloc[val_idx]
+
+    tr_group_sizes = (
+        df.iloc[train_idx].iloc[tr_idx]
+        .groupby("Race_Id").size().values
+    )
+    val_group_sizes = (
+        df.iloc[train_idx].iloc[val_idx]
+        .groupby("Race_Id").size().values
+    )
+
+    dtrain = xgb.DMatrix(X_tr, label=y_tr)
+    dtrain.set_group(tr_group_sizes)
+
+    dval = xgb.DMatrix(X_val, label=y_val)
+    dval.set_group(val_group_sizes)
+
+    model = xgb.train(
+        params,
+        dtrain,
+        num_boost_round=1000,
+        evals=[(dval, "val")],
+        early_stopping_rounds=50,
+        verbose_eval=False
+    )
+
+    ndcg = float(model.eval(dval).split(":")[1])
+    cv_ndcg.append(ndcg)
+    best_iters.append(model.best_iteration)
+
+    print(f"Fold {fold} CV NDCG: {ndcg:.4f}")
 
 model.fit(X_train, y_train)
 """, language="python")
