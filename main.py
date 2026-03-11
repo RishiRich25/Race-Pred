@@ -13,9 +13,14 @@ if not os.path.exists(cache_dir):
 
 fastf1.Cache.enable_cache("cache")
 
-st.set_page_config(page_title="Live F1 Race Predictor", layout="wide")
+st.set_page_config(page_title="Live F1 Race Predictor", layout="wide",page_icon="🏎️")
 st.title("🏎️ Automatic Live F1 Race Predictor")
-
+st.markdown(
+"""
+RacePred uses **machine learning + FastF1 session data** to predict the finishing
+order of Formula 1 races based on qualifying results and historical performance.
+"""
+)
 # ===============================
 # Load Model + Encoders (cached)
 # ===============================
@@ -63,100 +68,109 @@ except Exception:
     st.stop()
 
 if len(quali) == 0:
-    (f"### Quali Data Not Available")
+    st.write(f"### Quali Data Not Available")
+
 else:
     st.success("Qualifying session detected ✅")
 
-# ===============================
-# Build Feature Table
-# ===============================
-race_df = pd.DataFrame({
-    "Driver": quali["DriverId"],
-    "Team": quali["TeamId"],
-    "Q1": quali["Q1"].dt.total_seconds().fillna(0),
-    "Q2": quali["Q2"].dt.total_seconds().fillna(0),
-    "Q3": quali["Q3"].dt.total_seconds().fillna(0),
-    "Start": quali["Position"],
-    "Track": event_name,
-    "Rain": 0
-})
-
-# ===============================
-# 🔥 LOAD ELO HERE (Dynamic)
-# ===============================
-
-driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
-driver_elo = driver_elo.rename(columns={
-    "Name": "Driver"
-})
-team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
-team_elo = team_elo.rename(columns={
-    "Name": "Team"
-})
-
-race_df["Driver_Name"] = race_df["Driver"]
-race_df["Team_Name"] = race_df["Team"]
-
-race_df = race_df.merge(
-    driver_elo[["Driver", "Elo"]],
-    on="Driver",
-    how="left"
-).rename(columns={"Elo": "D_Elo"})
-
-race_df = race_df.merge(
-    team_elo[["Team", "Elo"]],
-    on="Team",
-    how="left"
-).rename(columns={"Elo": "T_Elo"})
-
-race_df["D_Elo"] = race_df["D_Elo"].fillna(1200)
-race_df["T_Elo"] = race_df["T_Elo"].fillna(1800)
-
-# ===============================
-# Encode
-# ===============================
-FEAT = [
-    "Driver", "Team", "Start",
-    "D_Elo", "T_Elo"
-]
-st.write(f"#### Elo for Event: {event_name}")
-st.dataframe(race_df[FEAT])
-
-race_df = prep.encode(
-    race_df,
-    mode="update",
-    save=True
-)
-
-FEATURES = [
-    "Driver", "Team", "Track", "Rain",
-    "Q1", "Q2", "Q3", "Start",
-    "D_Elo", "T_Elo"
-]
-
-dtest = xgb.DMatrix(race_df[FEATURES])
-dtest.set_group([len(race_df)])
-
-scores = model.predict(dtest)
-
-race_df["Predicted_Score"] = scores
-race_df = race_df.sort_values(
-    by="Predicted_Score",
-    ascending=False
-).reset_index(drop=True)
-
-race_df["Predicted_Position"] = race_df.index + 1
-
-st.write("## 🏁 Predicted Race Classification")
-st.dataframe(
-    race_df[[
-        "Predicted_Position",
-        "Driver_Name",
-        "Team_Name",
-        "Start"
-    ]].rename(columns={
-        "Driver_Name": "Driver",
-        "Team_Name": "Team",
-        "Start":"Starting Position"
+    # ===============================
+    # Build Feature Table
+    # ===============================
+    race_df = pd.DataFrame({
+        "Driver": quali["DriverId"],
+        "Team": quali["TeamId"],
+        "Q1": quali["Q1"].dt.total_seconds().fillna(0),
+        "Q2": quali["Q2"].dt.total_seconds().fillna(0),
+        "Q3": quali["Q3"].dt.total_seconds().fillna(0),
+        "Start": quali["Position"],
+        "Track": event_name,
+        "Rain": 0
     })
+
+    # ===============================
+    # 🔥 LOAD ELO HERE (Dynamic)
+    # ===============================
+    race_df = race_df["Driver"].dropna()
+    driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
+    driver_elo = driver_elo.rename(columns={
+        "Name": "Driver"
+    })
+    team_elo = pd.read_csv("this_year_team.csv", encoding="latin1")
+    team_elo = team_elo.rename(columns={
+        "Name": "Team"
+    })
+
+    race_df["Driver_Name"] = race_df["Driver"]
+    race_df["Team_Name"] = race_df["Team"]
+
+    race_df = race_df.merge(
+        driver_elo[["Driver", "Elo"]],
+        on="Driver",
+        how="left"
+    ).rename(columns={"Elo": "D_Elo"})
+
+    race_df = race_df.merge(
+        team_elo[["Team", "Elo"]],
+        on="Team",
+        how="left"
+    ).rename(columns={"Elo": "T_Elo"})
+
+    race_df["D_Elo"] = race_df["D_Elo"].fillna(1200)
+    race_df["T_Elo"] = race_df["T_Elo"].fillna(1800)
+
+    # ===============================
+    # Encode
+    # ===============================
+    FEAT = [
+        "Driver", "Team", "Start",
+        "D_Elo", "T_Elo"
+    ]
+    st.write(f"#### Elo for Event: {event_name}")
+    st.dataframe(race_df[FEAT])
+
+    race_df = prep.encode(
+        race_df,
+        mode="update",
+        save=True
+    )
+
+    FEATURES = [
+        "Driver", "Team", "Track", "Rain",
+        "Q1", "Q2", "Q3", "Start",
+        "D_Elo", "T_Elo"
+    ]
+
+    dtest = xgb.DMatrix(race_df[FEATURES])
+    dtest.set_group([len(race_df)])
+
+    scores = model.predict(dtest)
+
+    race_df["Predicted_Score"] = scores
+    race_df = race_df.sort_values(
+        by="Predicted_Score",
+        ascending=False
+    ).reset_index(drop=True)
+
+    race_df["Predicted_Position"] = race_df.index + 1
+
+    st.write("## 🏁 Predicted Race Classification")
+    st.dataframe(
+        race_df[[
+            "Predicted_Position",
+            "Driver_Name",
+            "Team_Name",
+            "Start"
+        ]].rename(columns={
+            "Driver_Name": "Driver",
+            "Team_Name": "Team",
+            "Start":"Starting Position"
+        })
+    )
+st.markdown(
+"""
+⚠️ **Disclaimer**
+
+This project is a data science experiment and is not affiliated with Formula 1 or the FIA.
+Predictions are probabilistic and may not reflect actual race outcomes.
+"""
 )
