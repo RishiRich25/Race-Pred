@@ -23,6 +23,9 @@ order of Formula 1 races based on qualifying results and historical performance.
 """
 )
 
+st.subheader("🔗 Project Repository: for more detailed information")
+st.link_button("GitHub Repository", "https://www.github.com/rishirich25/racepred")
+
 
 st.title("🏎️ RacePred Project Workflow")
 st.subheader("How the Formula 1 Race Prediction System Works")
