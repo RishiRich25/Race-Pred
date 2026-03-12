@@ -421,7 +421,6 @@ else:
     # ===============================
     # 🔥 LOAD ELO HERE (Dynamic)
     # ===============================
-    race_df = race_df["Driver"].dropna()
     driver_elo = pd.read_csv("this_year_driver.csv", encoding="latin1")
     driver_elo = driver_elo.rename(columns={
         "Name": "Driver"
@@ -457,7 +456,7 @@ else:
         "D_Elo", "T_Elo"
     ]
     st.write(f"#### Elo for Event: {event_name}")
-    st.dataframe(race_df[FEAT])
+    st.dataframe(race_df[FEAT].dropna())
 
     race_df = prep.encode(
         race_df,
@@ -470,6 +469,7 @@ else:
         "Q1", "Q2", "Q3", "Start",
         "D_Elo", "T_Elo"
     ]
+    race_df = race_df.dropna().reset_index(drop=True)
 
     dtest = xgb.DMatrix(race_df[FEATURES])
     dtest.set_group([len(race_df)])
@@ -481,16 +481,15 @@ else:
         by="Predicted_Score",
         ascending=False
     ).reset_index(drop=True)
-
     race_df["Predicted_Position"] = race_df.index + 1
-
     st.write("## 🏁 Predicted Race Classification")
     st.dataframe(
         race_df[[
             "Predicted_Position",
             "Driver_Name",
             "Team_Name",
-            "Start"
+            "Start",
+            "Predicted_Score"
         ]].rename(columns={
             "Driver_Name": "Driver",
             "Team_Name": "Team",
