@@ -2,6 +2,9 @@ import fastf1 as ff1
 import pandas as pd
 from datetime import datetime
 import csv
+import json
+import os
+import sys
 
 def k_maker(k1,k2):
     r = len(ff1.get_events_remaining(include_testing=False))
@@ -38,7 +41,7 @@ def driver_elo_calc_this_year(elo, start_pos, finish_pos, status, k_fact, grid=1
     elo = float(elo)
     actual = float(actual)
     expected = float(expected)
-    return round(elo + k_fact * (actual - expected), 2)
+    return round(elo + 1.5 * k_fact * (actual - expected), 2)
 
 
 def team_elo_calc_this_year(elo, start_pos, finish_pos, status, k_fact, grid=19):
@@ -72,7 +75,7 @@ def team_elo_calc_this_year(elo, start_pos, finish_pos, status, k_fact, grid=19)
     elo = float(elo)
     actual = float(actual)
     expected = float(expected)
-    return round(elo + k_fact * (actual - expected), 2)
+    return round(elo + 2 * k_fact * (actual - expected), 2)
 
 
 driver_data = {"Name":[],
@@ -108,6 +111,25 @@ yr = datetime.now().year
 events = pd.DataFrame(ff1.get_event_schedule(yr, include_testing=False))
 events_rem = pd.DataFrame(ff1.get_events_remaining(include_testing=False))
 rounds_over = len(events) - len(events_rem)
+
+checkpoint_file ="rounds_over.json"
+
+last_rounds_over = 0
+if os.path.exists(checkpoint_file):
+    try:
+        with open(checkpoint_file, mode='r') as file:
+            checkpoint_data = json.load(file)
+            last_rounds_over = int(checkpoint_data.get("rounds_over"))
+    except (json.JSONDecodeError, TypeError, ValueError):
+        last_rounds_over = 0
+
+if last_rounds_over == rounds_over:
+    sys.exit(0)
+
+with open(checkpoint_file, mode='w') as file:
+    json.dump({"rounds_over": rounds_over}, file)
+
+
 for rnd in range(rounds_over):
 
         event = ff1.get_event(yr,rnd+1)
